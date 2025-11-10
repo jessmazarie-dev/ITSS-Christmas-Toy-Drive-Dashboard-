@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UCPath ITSS • Toy Drive Dashboard</title>
+  <!--
+    SharePoint‑friendly version:
+    - No external fonts, scripts, or styles
+    - Self‑contained CSS/JS
+    - Namespaced classes under .tdc to minimize style collisions
+  -->
+  <style>
+    :root {
+      --tdc-bg: #f5f7fa;
+      --tdc-fg: #232a34;
+      --tdc-card: #ffffff;
+      --tdc-muted: #6e7882;
+      --tdc-soft: #eef2f6;
+      --tdc-accent: #1c865b;
+      --tdc-accent-2: #c48f00;
+    }
+    .tdc body { margin: 0; }
+    .tdc * { box-sizing: border-box; }
+    .tdc { font-family: Arial, Helvetica, sans-serif; background: var(--tdc-bg); color: var(--tdc-fg); }
+    .tdc-header { background: var(--tdc-fg); color: #fff; padding: 24px 16px; text-align: center; }
+    .tdc-header h1 { margin: 0; font-size: 28px; }
+    .tdc-header .tdc-sub { margin-top: 6px; font-size: 14px; opacity: 0.9; }
+
+    .tdc-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .tdc-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    .tdc-card { background: var(--tdc-card); border-radius: 14px; padding: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
+    .tdc h2 { margin: 12px 0; font-size: 20px; }
+
+    .tdc-controls { display:flex; gap: 12px; align-items:center; margin-bottom: 12px; flex-wrap: wrap; }
+    .tdc .tdc-btn { background: var(--tdc-fg); color: #fff; border: 0; border-radius: 10px; padding: 10px 14px; cursor: pointer; }
+    .tdc .tdc-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Table */
+    .tdc-table { width: 100%; border-collapse: collapse; }
+    .tdc-table th, .tdc-table td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--tdc-soft); }
+    .tdc-table thead th { background: #f0f3f7; position: sticky; top: 0; z-index: 1; }
+    .tdc-rank { width: 58px; font-weight: bold; }
+
+    /* Progress */
+    .tdc-progress { background: #e6e6e6; border-radius: 10px; height: 22px; overflow: hidden; }
+    .tdc-progress-bar { height: 100%; width: 0%; background: var(--tdc-accent); transition: width .6s ease; }
+    .tdc-progress-label { margin-top: 8px; font-size: 14px; color: var(--tdc-muted); }
+
+    .tdc-legend { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+    .tdc-legend-item { display:flex; align-items:center; gap:8px; font-size: 14px; }
+    .tdc-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--tdc-accent); }
+    .tdc-gold { color: var(--tdc-accent-2); font-weight: bold; }
+
+    /* Photos */
+    .tdc-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .tdc-photo { background: #f0f3f7; height: 180px; display:flex; align-items:center; justify-content:center; color: var(--tdc-muted); border-radius: 10px; }
+
+    .tdc-footer { text-align: center; padding: 18px; color: var(--tdc-muted); font-size: 14px; }
+
+    @media (max-width: 900px) {
+      .tdc-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="tdc">
+  <header class="tdc-header">
+    <h1>UCPath ITSS 2025 • Christmas Toy Drive Challenge</h1>
+    <div class="tdc-sub">“Yule Never Defeat Us — Together We Give” • Nov 4 – Dec 5, 2025</div>
+  </header>
+
+  <div class="tdc-container">
+    <div class="tdc-card">
+      <div class="tdc-controls">
+        <div><strong>Load tallies CSV</strong> (columns: Team,Toys,Dollars,Acts)</div>
+        <input type="file" id="csvFile" accept=".csv" />
+        <button class="tdc-btn" id="downloadTemplate">Download template</button>
+      </div>
+    </div>
+
+    <div class="tdc-grid">
+      <div class="tdc-card">
+        <h2>Leaderboard</h2>
+        <table class="tdc-table" id="leaderboard">
+          <thead>
+            <tr>
+              <th class="tdc-rank">Rank</th>
+              <th>Team</th>
+              <th>Total Points</th>
+              <th>Toys</th>
+              <th>$ Raised</th>
+              <th>Acts</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="tdc-legend" id="legend"></div>
+      </div>
+
+      <div class="tdc-card">
+        <h2>Sleigh‑o‑Meter</h2>
+        <div class="tdc-progress"><div class="tdc-progress-bar" id="progressBar"></div></div>
+        <div class="tdc-progress-label" id="progressLabel"></div>
+      </div>
+    </div>
+
+    <div class="tdc-card" style="margin-top:20px;">
+      <h2>Photo Highlights</h2>
+      <div class="tdc-photos">
+        <div class="tdc-photo">Drop photo 1</div>
+        <div class="tdc-photo">Drop photo 2</div>
+        <div class="tdc-photo">Drop photo 3</div>
+        <div class="tdc-photo">Drop photo 4</div>
+      </div>
+    </div>
+
+    <div class="tdc-card" style="margin-top:20px;">
+      <h2>Spirit Shout‑Outs</h2>
+      <ul id="shoutouts" style="padding-left: 18px; margin:0;"></ul>
+    </div>
+  </div>
+
+  <footer class="tdc-footer">UCPath ITSS • Holiday Giving</footer>
+
+  <script>
+    /* -------------------- CONFIG -------------------- */
+    const goalToys = 300; // Sleigh‑o‑Meter target
+    const defaultTallies = [
+      { team: "Li & Shubitha", toys: 0, dollars: 0, acts: 0 },
+      { team: "Rebecca & Kelly", toys: 0, dollars: 0, acts: 0 },
+      { team: "Tara & Ed", toys: 0, dollars: 0, acts: 0 },
+      { team: "Lisa & Bill", toys: 0, dollars: 0, acts: 0 },
+      { team: "Angie & Chris", toys: 0, dollars: 0, acts: 0 },
+      { team: "Jeet & Calvin", toys: 0, dollars: 0, acts: 0 }
+    ];
+
+    // Points weighting — adjust as needed
+    const weights = { toy: 5, dollar: 1, act: 10 };
+
+    // Example shoutouts (optional)
+    const defaultShoutouts = [
+      // "Great kickoff energy from Team Lisa & Bill!",
+      // "Big thanks to Finance for matching donations!",
+    ];
+
+    /* -------------------- HELPERS -------------------- */
+    function toNum(v){ const n = Number(String(v).trim()); return Number.isFinite(n) ? n : 0; }
+
+    function parseCSV(text){
+      // Light CSV parser (handles commas inside quotes)
+      const rows = [];
+      const lines = text.replace(/\r/g, '').split('\n').filter(Boolean);
+      for (const line of lines){
+        const cells = [];
+        let cur = '', inQ = false;
+        for (let i=0;i<line.length;i++){
+          const ch = line[i];
+          if (ch === '"'){
+            if (inQ && line[i+1] === '"'){ cur += '"'; i++; }
+            else { inQ = !inQ; }
+          } else if (ch === ',' && !inQ){ cells.push(cur); cur=''; }
+          else { cur += ch; }
+        }
+        cells.push(cur);
+        rows.push(cells.map(c=>c.trim()));
+      }
+      return rows;
+    }
+
+    function computePoints(row){
+      return row.toys * weights.toy + row.dollars * weights.dollar + row.acts * weights.act;
+    }
+
+    function renderLeaderboard(data){
+      const tbody = document.querySelector('#leaderboard tbody');
+      tbody.innerHTML = '';
+      const ranked = data.map(r => ({...r, points: computePoints(r)}))
+                         .sort((a,b)=> b.points - a.points);
+      ranked.forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="tdc-rank">${idx+1}${idx===0? ' 🏆' : ''}</td>
+          <td>${r.team}</td>
+          <td><span class="tdc-gold">${r.points.toLocaleString()}</span></td>
+          <td>${r.toys}</td>
+          <td>$${r.dollars.toLocaleString()}</td>
+          <td>${r.acts}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Legend
+      const legend = document.getElementById('legend');
+      legend.innerHTML = '';
+      const items = [
+        { label: `Toy = ${weights.toy} pts` },
+        { label: `$1 = ${weights.dollar} pt` },
+        { label: `Act = ${weights.act} pts` }
+      ];
+      for (const it of items){
+        const div = document.createElement('div');
+        div.className = 'tdc-legend-item';
+        div.innerHTML = `<span class="tdc-dot"></span>${it.label}`;
+        legend.appendChild(div);
+      }
+
+      // Progress: based on total toys across teams
+      const totalToys = ranked.reduce((s,r)=> s + r.toys, 0);
+      const pct = Math.max(0, Math.min(100, Math.round((totalToys/goalToys)*100)));
+      document.getElementById('progressBar').style.width = pct + '%';
+      document.getElementById('progressLabel').textContent = `${totalToys.toLocaleString()} / ${goalToys.toLocaleString()} toys (${pct}%)`;
+    }
+
+    function renderShoutouts(list){
+      const ul = document.getElementById('shoutouts');
+      ul.innerHTML = '';
+      list.forEach(txt => { const li = document.createElement('li'); li.textContent = txt; ul.appendChild(li); });
+    }
+
+    function downloadTemplateCSV(){
+      const header = 'Team,Toys,Dollars,Acts\n';
+      const rows = defaultTallies.map(r => `${r.team},${r.toys},${r.dollars},${r.acts}`).join('\n');
+      const blob = new Blob([header + rows], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'ToyDrive_Tallies_Template.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=> URL.revokeObjectURL(url), 1000);
+    }
+
+    /* -------------------- INIT -------------------- */
+    (function init(){
+      // Default render
+      renderLeaderboard(defaultTallies);
+      renderShoutouts(defaultShoutouts);
+
+      // CSV loader
+      const input = document.getElementById('csvFile');
+      input.addEventListener('change', ev => {
+        const file = ev.target.files && ev.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const rows = parseCSV(String(reader.result));
+            // Expect header row: Team,Toys,Dollars,Acts
+            const [hTeam,hToys,hDollars,hActs] = rows[0].map(h=>h.toLowerCase());
+            if (!(hTeam.includes('team') && hToys.includes('toy') && hDollars.includes('dollar') && hActs.includes('act'))){
+              alert('CSV header must be: Team,Toys,Dollars,Acts');
+              return;
+            }
+            const data = rows.slice(1)
+              .filter(r => r.length >= 4 && r[0])
+              .map(r => ({
+                team: r[0],
+                toys: toNum(r[1]),
+                dollars: toNum(r[2]),
+                acts: toNum(r[3])
+              }));
+            if (!data.length){ alert('No data rows found.'); return; }
+            renderLeaderboard(data);
+          } catch(err){
+            console.error(err);
+            alert('Could not read CSV. Please check the format.');
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      // Template button
+      document.getElementById('downloadTemplate').addEventListener('click', downloadTemplateCSV);
+    })();
+  </script>
+</body>
+</html>
